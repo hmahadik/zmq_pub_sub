@@ -4,47 +4,43 @@ import cv2
 import numpy as np
 import cProfile
 
+host = "172.17.0.2"
 port = "5556"
-if len(sys.argv) > 1:
-    port =  sys.argv[1]
-    int(port)
+src_addr = "tcp://172.17.0.2:5556"
 
 topic = "inference"
-if len(sys.argv) > 2:
-    topic = sys.argv[2]
+if len(sys.argv) > 1:
+    topic = sys.argv[1]
 
-# Socket to talk to server
+def subscribe():
+    global socket, context, topic
+    socket = context.socket(zmq.SUB)
+    socket.connect(src_addr)
+    socket.setsockopt(zmq.SUBSCRIBE, topic.encode())
+
 context = zmq.Context()
-socket = context.socket(zmq.SUB)
-socket.connect("tcp://localhost:%s" % port)
+subscribe()
 
-# Subscribe to topic
-socket.setsockopt(zmq.SUBSCRIBE, topic.encode())
-
-profile = cProfile.Profile()
-
+cv2.namedWindow(topic, cv2.WINDOW_AUTOSIZE|cv2.WINDOW_KEEPRATIO)
 while True:
     try:
-        topic = socket.recv()
+        topic = socket.recv().decode()
         md = socket.recv_json()
         msg = socket.recv()
         A = np.frombuffer(msg, dtype=md['dtype'])
         frame_num, frame = (md['frameId'], A.reshape(md['shape']))
         sys.stdout.write("\r {} received frame {}".format(topic, frame_num))
-        cv2.imshow("Inference", frame)
+        cv2.putText(frame, "{}x{}".format(md['shape'][1], md['shape'][0]), (10, 65),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.imshow(topic, frame)
         key = cv2.waitKey(md["timeout"])
         if key == ord('q'):
             break
-
-        #profile.enable()
+        
         socket.close()
-        socket = context.socket(zmq.SUB)
-        socket.connect("tcp://localhost:%s" % port)
-        socket.setsockopt(zmq.SUBSCRIBE, topic)
-        #profile.disable()
+        subscribe()
 
     except KeyboardInterrupt:
         break
 
-profile.print_stats(sort="cumtime")
 cv2.destroyAllWindows()

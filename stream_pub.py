@@ -31,7 +31,7 @@ while True:
         for topic in topics:
             if (frame.shape[1] != topics[topic]["width"] or 
                 frame.shape[0] != topics[topic]["height"]):
-                frame = cv2.resize(frame, (topics[topic]["width"], topics[topic]["height"]))
+                frame = cv2.resize(frame, (topics[topic]["width"], topics[topic]["height"]), 0, 0, cv2.INTER_AREA)
             messagedata = np.ascontiguousarray(frame) if not frame.flags['C_CONTIGUOUS'] else frame
             md = dict(
                     frameId=frame_num,
