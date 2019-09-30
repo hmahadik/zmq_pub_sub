@@ -1,6 +1,16 @@
 # Python ZMQ pub/sub pattern sample
 
 ## Installation
+Optional: Install the necessary packages if not already installed.
+```bash
+# may need to be executed as root (sudo)
+apt-get install git
+apt-get install python3 python3-setuptools
+easy_install3 pip
+pip3 install virtualenv
+```
+
+Required steps:
 ```bash
 # clone git repo
 git clone https://github.com/hmahadik/zmq_pub_sub.git
