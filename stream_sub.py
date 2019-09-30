@@ -36,12 +36,12 @@ while True:
         if key == ord('q'):
             break
 
-        profile.enable()
+        #profile.enable()
         socket.close()
         socket = context.socket(zmq.SUB)
         socket.connect("tcp://localhost:%s" % port)
         socket.setsockopt(zmq.SUBSCRIBE, topic)
-        profile.disable()
+        #profile.disable()
 
     except KeyboardInterrupt:
         break
